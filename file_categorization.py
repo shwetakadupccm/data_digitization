@@ -13,7 +13,6 @@ import pytesseract as pt
 from pdf2image import convert_from_path
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from docx2pdf import convert
-
 pt.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
 class DataDigitization():
