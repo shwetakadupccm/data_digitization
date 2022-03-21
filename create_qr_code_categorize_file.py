@@ -67,41 +67,38 @@ report_types = ['Patient Information', 'Clinical Examination', 'Radiology', 'Met
                 'Neo-Adjuvant Chemotherapy', 'Surgical Procedures', 'Patient Images', 'Surgery Media', 'Surgery Pathology',
                 'Chemotherapy', 'Radiotherapy', 'Follow-up Notes', 'Genetics', 'Miscellaneous', 'Patient File Data', 'PROMS']
 
-def make_qr_code(master_list, categorized_excel):
-    for index in range(len(master_list)):
-        id_dat = get_id_data(master_list, index)
-        file_number = id_dat[0]
-        for report_type in report_types:
-            categorized_data = categorized_excel['Report Name'].where(categorized_excel['File Number']==file_number
-                                                                      and categorized_excel['Report Name']==report_type)
 
+def make_qr_code(file_number, mr_number, report_type, subfolder, destination):
+    file_number_str = re.sub('_', '/', str(file_number))
+    if subfolder is not None:
+        qr_code = file_number_str + '_' + \
+            str(mr_number) + '_' + str(report_type) + '_' + str(subfolder)
+    else:
+        qr_code = file_number_str + '_' + \
+            str(mr_number) + '_' + str(report_type)
+    qr = pyqrcode.create(qr_code)
+    report_type_for_name = re.sub(' ', '_', str(report_type))
+    qr_img_name = file_number + '_' + \
+        str(mr_number) + '_' + report_type_for_name + '.png'
+    qr_path = os.path.join(destination, qr_img_name)
+    qr.png(qr_path, scale=4)
+    print('QR code created for ' + file_number + ' ' + report_type + ' ')
+    return qr_img_name
 
+def format_word_doc(doc, id_value):
+    text = doc.add_paragraph()
+    report_type_name = text.add_run(str(id_value))
+    report_type_name.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    report_type_name.bold = True
+    report_type_name.font.size = Pt(28)
+    report_type_name.font.name = 'Arial Black'
 
-
-
-
-
-
-
-
-# def make_qr_code(file_number, mr_number, report_type, subfolder, destination):
-#     file_number_str = re.sub('_', '/', str(file_number))
-#     if subfolder is not None:
-#         qr_code = file_number_str + '_' + \
-#             str(mr_number) + '_' + str(report_type) + '_' + str(subfolder)
-#     else:
-#         qr_code = file_number_str + '_' + \
-#             str(mr_number) + '_' + str(report_type)
-#     qr = pyqrcode.create(qr_code)
-#     report_type_for_name = re.sub(' ', '_', str(report_type))
-#     qr_img_name = file_number + '_' + \
-#         str(mr_number) + '_' + report_type_for_name + '.png'
-#     qr_path = os.path.join(destination, qr_img_name)
-#     qr.png(qr_path, scale=4)
-#     print('QR code created for ' + file_number + ' ' + report_type + ' ')
-#     return qr_img_name
-
-# make_qr_code('12_13', '1213', 'patient_information', None, 'D:/Shweta/data_digitization/sample_output/2022_03_14')
+def add_qr_code_in_word_document(qr_code_path):
+    doc = Document()
+    doc.add_picture(qr_code_path)
+    qr_alignment = doc.paragraphs[-1]
+    qr_alignment.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    format_word_doc(doc, )
 
 def add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, patient_name, dob, tmp_folder_path):
     doc = Document()
@@ -177,9 +174,6 @@ def split_pdf_to_pages(file_number, scanned_files_path, splitted_file_path):
             page.save(os.path.join(splitted_file_path, out_jpg), 'JPEG')
             i += 1
     print("file number: ", file_number + " split")
-
-split_pdf_by_images('66_10', 'D:/Shweta/data_digitization/scanned_patient_files/2022_03_14/original_pdf',
-                    'D:/Shweta/data_digitization/sample_output/2022_03_14/splitted_files/66_10')
 
 def get_image_no(file_number, file_images_lst):
     file_images_no_lst = []
