@@ -13,6 +13,7 @@ import pytesseract as pt
 from pdf2image import convert_from_path
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from docx2pdf import convert
+
 pt.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
 class DataDigitization():
@@ -20,18 +21,12 @@ class DataDigitization():
     def __init__(self, root, tmp_folder_path, destination_path):
         self.root = root
         self.tmp_folder_path = tmp_folder_path
-        self.report_names_df = pd.read_excel(os.path.join(
-            self.root, 'reference_docs/Report_types_17.xlsx'))
-        self.categorized_files_df = pd.read_excel(os.path.join(
-            self.root, 'reference_docs/',
-            '2022_02_09_Data_digitzation_scanned_files_dk.xlsx'))
+        self.report_names_df = pd.read_excel(os.path.join(self.root, 'reference_docs/Report_types_17.xlsx'))
+        self.categorized_files_df = pd.read_excel(os.path.join(self.root, 'reference_docs/', '2022_02_09_Data_digitzation_scanned_files_dk.xlsx'))
         self.tmp_folder_path = tmp_folder_path
-        self.scanned_patient_file_path = os.path.join(
-            self.root, 'scanned_patient_files/2022_03_14/original_pdf')
-        self.scanned_files_split_path = os.path.join(
-            self.root, 'scanned_patient_files/2022_03_15')
-        self.categorized_files_path = os.path.join(
-            self.root, 'sample_output/2022_03_14/categorized_files_path')
+        self.scanned_patient_file_path = os.path.join(self.root, 'scanned_patient_files/2022_03_14/original_pdf')
+        self.scanned_files_split_path = os.path.join(self.root, 'scanned_patient_files/2022_03_15')
+        self.categorized_files_path = os.path.join(self.root, 'sample_output/2022_03_14/categorized_files_path')
         self.destination_path = destination_path
 
     @staticmethod
