@@ -19,7 +19,7 @@ pt.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 root = 'D:/Shweta/data_digitization'
 master_file = pd.read_excel(os.path.join(root, 'reference_docs/2022_03_19_patient_master_list_sk.xlsx'))
 report_names_df = pd.read_excel(os.path.join(root, 'reference_docs/Report_types_17.xlsx'))
-categorized_files_df = pd.read_excel(os.path.join(root, 'reference_docs/2010_file_categorization.xlsx'))
+categorized_files_df = pd.read_excel(os.path.join(root, 'reference_docs/2010_file_categorization_excel.xlsx'))
 scanned_patient_file_path = os.path.join(root, 'scanned_patient_files/2022_03_14')
 categorized_file_path = os.path.join(root, 'scanned_patient_files/2022_03_14/original_pdf')
 
@@ -93,12 +93,6 @@ def format_word_doc(doc, id_value):
     report_type_name.font.size = Pt(28)
     report_type_name.font.name = 'Arial Black'
 
-def add_qr_code_in_word_document(qr_code_path):
-    doc = Document()
-    doc.add_picture(qr_code_path)
-    qr_alignment = doc.paragraphs[-1]
-    qr_alignment.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    format_word_doc(doc, )
 
 def add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, patient_name, dob, tmp_folder_path):
     doc = Document()
@@ -143,7 +137,6 @@ def add_qr_code_in_word_doc(report_type, qr_code_path, file_number, mr_number, p
     doc_path = os.path.join(coded_data, doc_name)
     doc.save(doc_path)
     return doc_path
-
 
 def convert_doc_to_pdf(doc_path):
     pdf_path = re.sub('.docx', '.pdf', str(doc_path))
