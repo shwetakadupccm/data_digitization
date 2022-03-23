@@ -21,8 +21,10 @@ class QrCode():
 
     def function_params(self, param_name):
         param_dict = dict(master_list= pd.read_excel(os.path.join(self.root, 'reference_docs', self.master_list_name)),
-                          categorized_excel = pd.read_excel(os.path.join(self.root, 'reference_docs', self.categorized_excel)),
-                          file_number = ['file_number'],
+                          categorized_excel=pd.read_excel(os.path.join(self.root, 'reference_docs', self.categorized_excel)),
+                          file_number=['file_number'],
+                          first_name='first_name',
+                          last_name='last_name',
                           id_cols=['mr_number', 'patient_name', 'date_of_birth'],
                           folder_col_heads=['report_name', 'subfolder_name'],
                           report_types_dict=['Patient Information', 'Clinical Examination',
@@ -36,15 +38,10 @@ class QrCode():
                                             'PROMS'])
         return param_dict.get(param_name)
 
-
-    def add_qr_code_in_word_document(self, id_data):
-        qr_code_dat = self.make_qr_code() #add input params
+    def add_qr_code_in_word_document(self, category_row):
+        qr_code_dat = self.make_qr_code(category_row) #add input params
         doc_dat = qr_code_dat.split("_")
-        patient_name, date_of_birth = id_data[2:]
-        # master_list = self.function_param.get('master_list')
-        # patient_name = list(master_list[master_list['file_number'] == doc_dat[0] & master_list['mr_number'] == doc_dat[1]]['patient_name'])[0]
-        # for row, file_number in enumerate(self.categorised_excel['file_number']):
-        #     print(row, file_number)
+        file_number, mr_number, patient_name, date_of_birth = doc_dat[0:4]
         doc = Document()
         # id_data = get_id_data(self.master_list, file_number, self.function_params('id_cols'))
         # id_name = '_'.join(str(id) for id in id_data)
@@ -58,18 +55,23 @@ class QrCode():
         #     qr_code_name = str(file_number) + '_' + str(mr_number) + '_' + str(report_type_str) + '_' + str(
         #         subfolder_str) + '.png'
         #     qr_code_path = os.path.join(tmp_qr_code_folder, qr_code_name)
-        doc.add_picture(os.path.join(self.root, 'tmp\qr_code\qr_code.png'))
+        doc.add_picture(os.path.join(self.root, 'tmp\qr_codes\qr_img.png'))
         qr_alignment = doc.paragraphs[-1]
         qr_alignment.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        doc = doc.add_paragraph()
-        folders = doc_dat[2:],
-        id_texts = [', '.join(doc_dat[0:2]), patient_name, date_of_birth]
+        folders = doc_dat[4:]
+        # id_texts = [', '.join(doc_dat[0:2]), patient_name, date_of_birth]
         # should work?
-        doc = [self.format_word_doc(folder, doc) for folder in folders]
+        folder = [folder for folder in folders if folder is not None]
+        report_type = ' '.join(id for id in folder)
+        doc = self.format_word_doc(report_type, doc)
         blank_para = doc.add_paragraph()
         run = blank_para.add_run()
         run.add_break()
-        doc = [self.format_word_doc(id_text, doc) for id_text in id_texts]
+        # todo for loop
+        doc = self.format_word_doc('File Number: ' + file_number, doc)
+        doc = self.format_word_doc('MR Number: ' + mr_number, doc)
+        doc = self.format_word_doc('Patient Name: ' + patient_name, doc)
+        doc = self.format_word_doc('Date of Birth: ' + date_of_birth, doc)
             # format_word_doc(id_text, doc)
             # report_type_name = text.add_run(str(report_type_no) + '. ' + str(report_type))
             # format_word_doc(report_type_name)
@@ -84,12 +86,35 @@ class QrCode():
             # format_word_doc(id)
             # id = doc.add_paragraph().add_run(dob)
             # format_word_doc(id)
-        doc_name = qr_code_dat.replace("/| ", "_") + '.docx'
-        doc_path = os.path.join(os.path.join(self.root, 'tmp/coded_data', doc_name))
+        doc_name = qr_code_dat.replace("/", "_")
+        doc_name = doc_name.replace(" ", '_') + '.docx'
+        coded_data_dir = self.create_tmp_folder_for_data_type(data_type='coded_data')
+        doc_path = os.path.join(os.path.join(coded_data_dir, doc_name))
         doc.save(doc_path)
         pdf_path = doc_path.replace('.docx', '.pdf')
         # pdf_path = os.path.join(doc_path, pdf_name)
         convert(doc_path, pdf_path)
+
+    def create_tmp_folder_for_data_type(self, data_type):
+        data_type_dir = os.path.join(self.root, 'tmp/', data_type)
+        if not os.path.isdir(data_type_dir):
+            os.mkdir(data_type_dir)
+        return data_type_dir
+
+    # def create_tmp_folder_for_coded_data(self):
+    #     coded_data_dir = os.path.join(self.root, 'tmp/coded_data')
+    #     if not os.path.isdir(coded_data_dir):
+    #         os.mkdir(coded_data_dir)
+    #     return coded_data_dir
+
+    @classmethod
+    def make_patient_full_name(self, master_list):
+        first_name_col_idx = master_list.columns.get_loc('first_name')
+        last_name_col_idx = master_list.columns.get_loc('last_name')
+        master_list['patient_name'] = master_list[master_list.columns[first_name_col_idx:last_name_col_idx]].apply(
+            lambda x: ' '.join(x.dropna().astype(str)), axis = 1)
+        master_list['patient_name'] = master_list['patient_name'].str.title()
+        return master_list
 
     def get_id_data(self, file_number):
         """
@@ -100,6 +125,7 @@ class QrCode():
         :return: list of id data for single row of master list
         """
         master_list = self.function_params('master_list')
+        master_list = self.make_patient_full_name(master_list)
         id_cols = self.function_params('id_cols')
         id_data = master_list[master_list['file_number'] == file_number][id_cols]
         # id_data =id_data
@@ -139,7 +165,7 @@ class QrCode():
 
 # todo send only 1 line of categorized excel to this function and 1 line of master list
     # todo make required folders in root dir
-    def make_qr_code(self, file_number, category_row):
+    def make_qr_code(self, category_row):
         """
         create qr code from input data with proper formating. returns the data used
         to create the qr code
@@ -149,21 +175,25 @@ class QrCode():
         :return: qr_code_dat
         """
         folders = list(category_row[self.function_params('folder_col_heads')])
-        file_number = str(category_row[self.function_params('file_number')])
-        id_dat = self.get_id_data(file_number)
-        file_number.replace("_", "/")
+        file_number = category_row[self.function_params('file_number')].get('file_number')
+        id_dat = self.get_id_data(file_number) #id data = mr number, patient_name, date_of_birth
+        file_number_str = file_number.replace("_", "/")
         folder = [folder for folder in folders if folder is not None]
-        id_dat = id_dat + folders
-        qr_code_dat = str(file_number) + '_'.join(id_dat + folder)
+        # '_'.join(['file_number', str('mr_number')] + [folder])
+        qr_code_dat = str(file_number_str) + '_' + '_'.join(str(id_text) for id_text in (id_dat[0:1] + folder))
+        qr_dat = str(file_number_str) + '_' + '_'.join(str(id_text) for id_text in (id_dat + folder))
         qr_img = pyqrcode.create(qr_code_dat)
-        qr_img.png(os.path.join(self.root, 'tmp/qr_code/qr_img.png'), scale=4)
-        return qr_code_dat
+        qr_dir = self.create_tmp_folder_for_data_type(data_type='qr_code')
+        qr_img.png(os.path.join(qr_dir, 'qr_img.png'), scale=4)
+        return qr_dat
 
+    @staticmethod
     def format_word_doc(id_text, doc):
-        doc_text = doc.add_paragraph().add_run(id_text)
+        doc_text = doc.add_paragraph()
+        doc_text = doc_text.add_run(id_text)
         doc_text.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         doc_text.bold = True
-        doc_text.font.size = Pt(28)
+        doc_text.font.size = Pt(12)
         doc_text.font.name = 'Arial Black'
         blank_para = doc.add_paragraph()
         blank_para.add_run()
@@ -180,3 +210,11 @@ class QrCode():
 # tmp_coded_data = 'D:/Shweta/data_digitization/sample_output/2022_03_21/coded_data'
 #
 # add_qr_code_in_word_document(tmp_qr_code_folder, master_list, categorised_excel, tmp_coded_data)
+if __name__ == '__main__':
+    qr = QrCode('D:/Shweta/data_digitization',
+                'patient_master_list_aj_jj.xlsx',
+                '2010_file_categorization_excel.xlsx')
+    # master_list = qr.function_params('master_list')
+    category_excel = qr.function_params('categorized_excel')
+    qr.add_qr_code_in_word_document(category_excel.iloc[0])
+    print('qr code created')
