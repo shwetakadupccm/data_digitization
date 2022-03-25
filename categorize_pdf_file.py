@@ -8,11 +8,12 @@ from create_qr_code import QrCode
 
 class CategorizeFile():
 
-    def __init__(self, root, master_list_name, categorized_excel, scanned_files_folder_path):
+    def __init__(self, root, master_list_name, categorized_excel, scanned_files_folder_path, destination_path):
         self.root = root
         self.scanned_files_folder_path = scanned_files_folder_path
         self.master_list_name = master_list_name
         self.categorized_excel = categorized_excel
+        self.destination_path = destination_path
 
     def split_pdf_by_pages(self, file_number):
         qr_code = QrCode(root=self.root, master_list_name=self.master_list_name, categorized_excel=self.categorized_excel)
@@ -115,15 +116,17 @@ class CategorizeFile():
 
     @staticmethod
     def make_pdf_name_using_page_no(page_no_lst, file_number):
+        report_page_names = []
         for page_no in page_no_lst:
             report_page_name = str(file_number) + '_' + str(page_no) + '.pdf'
-        return report_page_name
+            report_page_names.append(report_page_name)
+        return report_page_names
 
-    @staticmethod
-    def get_report_page_rename(page_no_lst, report_page_lst):
-
-        for page_no in page_no_lst:
-            report_name =
+    # @staticmethod
+    # def get_report_page_rename(page_no_lst, report_page_lst):
+    #
+    #     for page_no in page_no_lst:
+    #         report_name =
 
 
     @staticmethod
@@ -147,22 +150,47 @@ class CategorizeFile():
             shutil.copy(pdf_doc_path, os.path.join(
                 new_file_path, coded_file_name))
 
+    # def make_folder_subfolder_in_destination(self, file_number, folder_subfolder_lst):
+    #     folder_dirs = []
+    #     file_number_dir = os.path.join(self.destination_path, file_number)
+    #     if not os.path.isdir(file_number_dir):
+    #         os.mkdir(file_number_dir)
+    #     parent_folder_path = os.path.join(file_number_dir, folder_subfolder_lst[0])
+    #     folder_dirs.append(parent_folder_path)
+    #     if not os.path.isdir(parent_folder_path):
+    #         os.mkdir(parent_folder_path)
+    #     if len(folder_subfolder_lst) != 1:
+    #         for subfolder in folder_subfolder_lst[1:]:
+    #             subfolder_path = os.path.join(parent_folder_path, subfolder)
+    #             if not os.path.isdir(subfolder_path):
+    #                 os.mkdir(subfolder_path)
+    #                 folder_dirs.append(subfolder_path)
+    #     return folder_dirs
 
-
+    def make_folder_for_report_type(self, file_number, folder_subfolder_lst):
+        file_number_folder = os.path.join(self.destination_path, str(file_number))
+        if not os.path.isdir(file_number_folder):
+            os.mkdir(file_number_folder)
+        subdir = os.path.join(self.destination_path, str(file_number), '/'.join(folder_subfolder_lst))
+        if not os.path.isdir(subdir):
+            os.mkdir(subdir)
 
     def categorize_file_by_report_types(self):
         qr_code = QrCode(root=self.root, master_list_name=self.master_list_name,
                          categorized_excel=self.categorized_excel)
-        categorized_excel = qr_code.function_params('categorized_excel')
+        categorized_excel = qr_code.function_params('categorized_excel') # reading categorized excel
         for i in range(len(categorized_excel)):
             # file_number = self.categorized_files_df['file_number'][i]
             # mr_number = self.categorized_files_df['mr_number'][i]
             # patient_name = self.categorized_files_df['patient_name'][i]
             # dob = self.categorized_files_df['date_of_birth'][i]
-            category_row = categorized_excel.iloc[i]
-            file_number = category_row[qr_code.function_params('file_number')].get('file_number')
-            coded_pdf_path = qr_code.add_qr_code_in_word_document(category_row)
-            splitted_file_path = self.split_pdf_by_pages(file_number)
+            category_row = categorized_excel.iloc[i] ## one row of category excel
+            file_number = category_row[qr_code.function_params('file_number')].get('file_number') # file number from that row
+            doc_data, coded_pdf_path = qr_code.add_qr_code_in_word_document(category_row) # creating qr code, adding it into doc, converting
+                                                                                          #  it into pdf and returns doc_data list and pdf path
+                                                                    # doc_dat = [file_number, mr_number, patient_name, date_of_birth, folder, subfolder]
+            splitted_file_path = self.split_pdf_by_pages(file_number) # splitting the scanned pdf using file number
+            folder_dirs = self.make_folder_subfolder_in_destination(file_number, doc_data[4:])
             report_page_nums = category_row['page_numbers']
             page_no_lst = self.split_report_page_no(report_page_nums)
             report_no_lst = self.get_image_no(file_number, os.listdir(splitted_file_path))

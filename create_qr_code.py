@@ -65,7 +65,7 @@ class QrCode():
         doc.save(doc_path)
         pdf_path = doc_path.replace('.docx', '.pdf')
         convert(doc_path, pdf_path)
-        return pdf_path
+        return doc_dat, pdf_path
 
     def create_tmp_folder_for_data_type(self, data_type):
         data_type_dir = os.path.join(self.root, 'tmp/', data_type)
