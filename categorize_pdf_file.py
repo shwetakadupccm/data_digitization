@@ -115,19 +115,19 @@ class CategorizeFile():
                 shutil.copy(source_path, dest_path)
 
     @staticmethod
-    def make_pdf_name_using_page_no(page_no_lst, file_number):
-        report_page_names = []
-        for page_no in page_no_lst:
-            report_page_name = str(file_number) + '_' + str(page_no) + '.pdf'
-            report_page_names.append(report_page_name)
-        return report_page_names
+    def make_pdf_name_using_page_no(page_no, file_number):
+        report_page_name = str(file_number) + '_' + str(page_no) + '.pdf'
+        return report_page_name
 
-    # @staticmethod
-    # def get_report_page_rename(page_no_lst, report_page_lst):
-    #
-    #     for page_no in page_no_lst:
-    #         report_name =
-
+    @classmethod
+    def copy_rename_page(self, file_number, page_no_list, splitted_file_path, folder_dir):
+        report_no_lst = self.get_image_no(file_number, os.listdir(splitted_file_path))
+        for page_no in page_no_list:
+            if page_no in report_no_lst:
+                report_page_name = self.make_pdf_name_using_page_no(page_no, file_number)
+                source_path = os.path.join(splitted_file_path, report_page_name)
+                dest_path = os.path.join(folder_dir, report_page_name)
+                shutil.copy(source_path, dest_path)
 
     @staticmethod
     def rename_images(pdf_doc_path, dir_path, file_no, report_type, destination_path):
@@ -171,9 +171,13 @@ class CategorizeFile():
         file_number_folder = os.path.join(self.destination_path, str(file_number))
         if not os.path.isdir(file_number_folder):
             os.mkdir(file_number_folder)
+        parent_folder = os.path.join(file_number_folder, folder_subfolder_lst[0])
+        if not os.path.isdir(parent_folder):
+            os.mkdir(parent_folder)
         subdir = os.path.join(self.destination_path, str(file_number), '/'.join(folder_subfolder_lst))
         if not os.path.isdir(subdir):
             os.mkdir(subdir)
+        return subdir
 
     def categorize_file_by_report_types(self):
         qr_code = QrCode(root=self.root, master_list_name=self.master_list_name,
@@ -190,10 +194,10 @@ class CategorizeFile():
                                                                                           #  it into pdf and returns doc_data list and pdf path
                                                                     # doc_dat = [file_number, mr_number, patient_name, date_of_birth, folder, subfolder]
             splitted_file_path = self.split_pdf_by_pages(file_number) # splitting the scanned pdf using file number
-            folder_dirs = self.make_folder_subfolder_in_destination(file_number, doc_data[4:])
+            folder_dir = self.make_folder_for_report_type(file_number, doc_data[4:])
             report_page_nums = category_row['page_numbers']
             page_no_lst = self.split_report_page_no(report_page_nums)
-            report_no_lst = self.get_image_no(file_number, os.listdir(splitted_file_path))
+
 
 
 
