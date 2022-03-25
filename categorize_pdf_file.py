@@ -6,6 +6,7 @@ import numpy as np
 from PyPDF2 import PdfFileReader, PdfFileWriter
 from create_qr_code import QrCode
 
+
 class CategorizeFile():
 
     def __init__(self, root, master_list_name, categorized_excel, scanned_files_folder_path):
@@ -15,13 +16,16 @@ class CategorizeFile():
         self.categorized_excel = categorized_excel
 
     def split_pdf_by_pages(self, file_number):
-        qr_code = QrCode(root=self.root, master_list_name=self.master_list_name, categorized_excel=self.categorized_excel)
-        tmp_folder = qr_code.create_tmp_folder_for_data_type(data_type='splitted_files')
+        qr_code = QrCode(root=self.root, master_list_name=self.master_list_name,
+                         categorized_excel=self.categorized_excel)
+        tmp_folder = qr_code.create_tmp_folder_for_data_type(
+            data_type='splitted_files')
         splitted_file_path = os.path.join(tmp_folder, str(file_number))
         if not os.path.isdir(splitted_file_path):
             os.mkdir(splitted_file_path)
         scanned_file_name = str(file_number) + '.pdf'
-        scanned_file = PdfFileReader(os.path.join(self.scanned_files_folder_path, scanned_file_name))
+        scanned_file = PdfFileReader(os.path.join(
+            self.scanned_files_folder_path, scanned_file_name))
         page_range = scanned_file.getNumPages()
         for i in range(page_range):
             page = scanned_file.getPage(i)
@@ -107,7 +111,7 @@ class CategorizeFile():
         for page_no in report_page_no_splitted:
             if page_no in img_no_lst:
                 report_page_name = str(file_number) + \
-                                   '_' + str(page_no) + '.pdf'
+                    '_' + str(page_no) + '.pdf'
                 source_path = os.path.join(
                     splitted_file_path_file_no, report_page_name)
                 dest_path = os.path.join(report_dir, report_page_name)
@@ -118,13 +122,12 @@ class CategorizeFile():
         for page_no in page_no_lst:
             report_page_name = str(file_number) + '_' + str(page_no) + '.pdf'
         return report_page_name
-
-    @staticmethod
-    def get_report_page_rename(page_no_lst, report_page_lst):
-
-        for page_no in page_no_lst:
-            report_name =
-
+    # shweta working here..
+    # @staticmethod
+    # def get_report_page_rename(page_no_lst, report_page_lst):
+#
+        # for page_no in page_no_lst:
+        # report_name =
 
     @staticmethod
     def rename_images(pdf_doc_path, dir_path, file_no, report_type, destination_path):
@@ -147,9 +150,6 @@ class CategorizeFile():
             shutil.copy(pdf_doc_path, os.path.join(
                 new_file_path, coded_file_name))
 
-
-
-
     def categorize_file_by_report_types(self):
         qr_code = QrCode(root=self.root, master_list_name=self.master_list_name,
                          categorized_excel=self.categorized_excel)
@@ -160,15 +160,14 @@ class CategorizeFile():
             # patient_name = self.categorized_files_df['patient_name'][i]
             # dob = self.categorized_files_df['date_of_birth'][i]
             category_row = categorized_excel.iloc[i]
-            file_number = category_row[qr_code.function_params('file_number')].get('file_number')
+            file_number = category_row[qr_code.function_params(
+                'file_number')].get('file_number')
             coded_pdf_path = qr_code.add_qr_code_in_word_document(category_row)
             splitted_file_path = self.split_pdf_by_pages(file_number)
             report_page_nums = category_row['page_numbers']
             page_no_lst = self.split_report_page_no(report_page_nums)
-            report_no_lst = self.get_image_no(file_number, os.listdir(splitted_file_path))
-
-
-
+            report_no_lst = self.get_image_no(
+                file_number, os.listdir(splitted_file_path))
 
             # classified_files_path = os.path.join(
             #     self.tmp_folder_path, 'classfied_files')
