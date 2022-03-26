@@ -122,11 +122,12 @@ class CategorizeFile():
     @classmethod
     def copy_rename_page(self, file_number, page_no_list, splitted_file_path, folder_dir):
         report_no_lst = self.get_image_no(file_number, os.listdir(splitted_file_path))
-        for page_no in page_no_list:
+        for idx, page_no in enumerate(page_no_list):
             if page_no in report_no_lst:
                 report_page_name = self.make_pdf_name_using_page_no(page_no, file_number)
                 source_path = os.path.join(splitted_file_path, report_page_name)
-                dest_path = os.path.join(folder_dir, report_page_name)
+                new_file_name = self.make_pdf_name_using_page_no(str(idx + 1), file_number)
+                dest_path = os.path.join(folder_dir, new_file_name)
                 shutil.copy(source_path, dest_path)
 
     @staticmethod
@@ -174,7 +175,8 @@ class CategorizeFile():
         parent_folder = os.path.join(file_number_folder, folder_subfolder_lst[0])
         if not os.path.isdir(parent_folder):
             os.mkdir(parent_folder)
-        subdir = os.path.join(self.destination_path, str(file_number), '/'.join(folder_subfolder_lst))
+        subdir = os.path.join(self.destination_path, str(file_number),
+                              '/'.join(str(folder) for folder in folder_subfolder_lst))
         if not os.path.isdir(subdir):
             os.mkdir(subdir)
         return subdir
@@ -197,10 +199,8 @@ class CategorizeFile():
             folder_dir = self.make_folder_for_report_type(file_number, doc_data[4:])
             report_page_nums = category_row['page_numbers']
             page_no_lst = self.split_report_page_no(report_page_nums)
-
-
-
-
+            shutil.move(coded_pdf_path, folder_dir)
+            self.copy_rename_page(file_number, page_no_lst, splitted_file_path, folder_dir)
 
             # classified_files_path = os.path.join(
             #     self.tmp_folder_path, 'classfied_files')
@@ -214,3 +214,12 @@ class CategorizeFile():
             #     file_number), report_type_str, self.destination_path)
             # print("file: ", file_number,
             #       ' classified by report types and arranged by sequence')
+
+
+
+
+
+
+
+
+
