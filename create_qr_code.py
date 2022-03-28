@@ -39,30 +39,26 @@ class QrCode():
 
     def add_qr_code_in_word_document(self, category_row):
         qr_img_path, qr_code_lst = self.make_qr_code(category_row)
-        print(qr_img_path)
         print(qr_code_lst)
         # doc_dat = qr_code_dat.split("_")
         # file_number, mr_number, patient_name, date_of_birth = doc_dat[0:4]
         doc = Document()
         doc.add_picture(qr_img_path)
-        print(os.path.join(self.root, 'tmp\qr_codes\qr_img.png'))
         qr_alignment = doc.paragraphs[-1]
         qr_alignment.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         folders = qr_code_lst[4:]
         # id_texts = [', '.join(doc_dat[0:2]), patient_name, date_of_birth]
         # should work? - working
-        folder = [folder for folder in folders if folder is not None]
+        # folder = [folder for folder in folders if folder is not None]
+        folder = [str(folder) for folder in folders if folder != 'nan']
         report_type = ' '.join(str(id) for id in folder)
         doc = self.format_word_doc(report_type, doc)
         blank_para = doc.add_paragraph()
         run = blank_para.add_run()
         run.add_break()
-        # todo for loop - done
         prefixes = self.function_params('qr_data_cols')
         for idx, prefix in enumerate(prefixes):
             doc = self.format_word_doc(str(prefix) + ': ' + str(qr_code_lst[idx]), doc)
-        # doc_name = qr_code_dat.replace("/", "_")
-        # doc_name = doc_name.replace(" ", '_') + '.docx'
         doc_name = 'coded_file.docx'
         coded_data_dir = self.create_tmp_folder_for_data_type(data_type='coded_data')
         doc_path = os.path.join(os.path.join(coded_data_dir, doc_name))
@@ -152,7 +148,8 @@ class QrCode():
         file_number = category_row[self.function_params('file_number')].get('file_number')
         id_dat = self.get_id_data(file_number) # id data = mr number, patient_name, date_of_birth
         file_number_str = file_number.replace("_", "/")
-        folder = [folder for folder in folders if folder is not None]
+        # folder = [folder for folder in folders if folder is not None]
+        folder = [str(folder) for folder in folders if folder != 'nan']
         id_data = [file_number_str, str(id_dat[0])] + folder
         qr_code_dat = '_'.join(str(id_text) for id_text in id_data)
         # qr_code_dat = str(file_number_str) + '_' + '_'.join(str(id_text) for id_text in (id_dat[0:1] + folder))
@@ -164,17 +161,7 @@ class QrCode():
         qr_img.png((qr_img_path), scale=4)
         return qr_img_path, qr_code_lst
 
-    @staticmethod
-    def format_word_doc(id_text, doc):
-        doc_text = doc.add_paragraph()
-        doc_text = doc_text.add_run(id_text)
-        doc_text.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        doc_text.bold = True
-        doc_text.font.size = Pt(12)
-        doc_text.font.name = 'Arial Black'
-        return doc
-
-    # def split_id_data_to_string(id_data):
+   # def split_id_data_to_string(id_data):
     #     mr_number = id_data['mr_number'][0]
     #     patient_name = id_data['patient_name'][0]
     #     dob = id_data['dob'][0]
