@@ -2,11 +2,11 @@
 functions that are required to move/rename files create folders etc
 define paramters
 '''
-# from doctest import master
 import os
 import re
 import pandas as pd
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT as WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
 
 class HelperFunctions:
     '''
@@ -69,6 +69,7 @@ class HelperFunctions:
     #             os.mkdir(data_type_dir)
     #     return data_type_dir
 
+    # data type = list?
     def create_folder_for_data_type(self, data_type, source_folder):
         source_path = os.path.join(self.root, source_folder)
         if not os.path.isdir(source_path):
@@ -76,6 +77,7 @@ class HelperFunctions:
         data_type_dir = os.path.join(source_path, data_type)
         if not os.path.isdir(data_type_dir):
             os.mkdir(data_type_dir)
+        return data_type_dir
 
     @staticmethod
     def change_sep(string, old_sep, new_sep):
@@ -112,6 +114,6 @@ class HelperFunctions:
         doc_text = doc_text.add_run(id_text)
         doc_text.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY # type: ignore
         doc_text.bold = True
-        doc_text.font.size = Pt(12) # type: ignore
+        doc_text.font.size = Pt(12)
         doc_text.font.name = 'Arial Black'
         return doc
