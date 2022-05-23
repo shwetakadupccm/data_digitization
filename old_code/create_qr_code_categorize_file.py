@@ -324,3 +324,58 @@ categorize_file_by_report_types(report_names_df, categorized_files_df,
                                 'D:/Shweta/data_digitization/scanned_patient_files/2022_03_15/splitted_pdf',
                                 'D:/Shweta/data_digitization/sample_output/2022_03_15',
                                 'D:/Shweta/data_digitization/sample_output/2022_03_15/destination_path')
+
+
+def split_report_page_no(report_page_no):
+    if isinstance(report_page_no, float):
+        page_no_lst = []
+        if not math.isnan(report_page_no):
+            integer = int(report_page_no)
+            page_no_lst.append(str(integer))
+        return page_no_lst
+    elif isinstance(report_page_no, int):
+        page_no_lst = []
+        page_no_lst.append(str(report_page_no))
+        return page_no_lst
+    elif ';' in report_page_no:
+        page_no_lst = []
+        report_page_no_splitted = report_page_no.split(';')
+        for page_no in report_page_no_splitted:
+            if '|' in page_no:
+                partitions = page_no.partition('|')
+                start = int(partitions[0])
+                end = int(partitions[2]) + 1
+                if start<end:
+                    page_nos = np.arange(start, end)
+                    page_nos_lst = page_nos.tolist()
+                    for no in page_nos_lst:
+                        page_no_lst.append(str(no))
+                else:
+                    page_nos = np.arange(end, start)
+                    page_nos = page_nos[::-1]
+                    page_nos_lst = page_nos.tolist()
+                    for no in page_nos_lst:
+                        page_no_lst.append(str(no))
+            else:
+                page_no_lst.append(str(page_no))
+        return page_no_lst
+    elif '|' in report_page_no:
+        page_no_lst = []
+        partitions = report_page_no.partition('|')
+        start = int(partitions[0])
+        end = int(partitions[2]) + 1
+        page_nos = np.arange(start, end)
+        page_nos_lst = page_nos.tolist()
+        for no in page_nos_lst:
+            page_no_lst.append(str(no))
+        return page_no_lst
+    elif type(report_page_no) in (float, int):
+        page_no_lst = []
+        report_page_no = int(report_page_no)
+        page_no_lst.append(str(report_page_no))
+        return page_no_lst
+    else:
+        page_no_lst = []
+        page_no_lst.append(str(report_page_no))
+        return page_no_lst
+
