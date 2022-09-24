@@ -7,7 +7,7 @@ import pandas as pd
 
 REF_DIR_LIST = ['master_list', 'final_data',
                 'status_sheets', 'categorization_data', 'scanned_files']
-FTP_ROOT_FOLDER = 'CLINICAL DATA BASE/Digitized Files/file_categorization'
+FTP_ROOT_FOLDER = 'CLINICAL DATA BASE/Digitized Files/data_digitization/file_categorization'
 COMMON_PATH = 'final_data'
 
 
@@ -17,7 +17,7 @@ COMMON_PATH = 'final_data'
 def open_connection():
     ftp = ftplib.FTP('192.168.1.5')
     ftp.login('Devaki', 'Secure@2023')
-    ftp.cwd(FTP_ROOT_FOLDER)
+    # ftp.cwd(FTP_ROOT_FOLDER)
     return ftp
 
 
